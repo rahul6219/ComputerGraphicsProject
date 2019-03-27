@@ -1,0 +1,197 @@
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script>
+
+			var scene,camera,renderer,cube;			
+			var meshFloor;
+			var speed=0.1;
+			var player ={height: 2.0, movementSpeed: 0.3, turnSpeed: Math.PI * 0.03};
+			var group;
+
+
+			main();
+			animate();
+
+
+			function main()
+			{
+
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				//Main Shape Cube with wheels
+				var geometry = new THREE.BoxGeometry(1,1,1);
+				var material = new THREE.MeshBasicMaterial( { color: 0x8A0707 } );
+				cube = new THREE.Mesh( geometry, material );
+				scene.add( cube );
+
+				cube.position.set(0,0,0);
+				camera.position.set(0,player.height,-7);
+				camera.lookAt(new THREE.Vector3(0,player.height,0));
+
+				meshFloor=new THREE.Mesh( 
+					new THREE.PlaneGeometry(10,10,10,10),
+					new THREE.MeshBasicMaterial({color:0x3b5998,wireframe:false})
+
+				);
+
+				meshFloor.rotation.x=meshFloor.rotation.x- Math.PI/2;
+				scene.add(meshFloor);
+
+				
+
+				
+			/**	var circleGeometry1 = new THREE.CircleGeometry( 0.5, 32 );
+				var material = new THREE.MeshBasicMaterial( { color: 0xffff00 } )7
+				var circle1 = new THREE.Mesh( circleGeometry1, material );
+			   // circle1.position.x=0;
+				scene.add( circle1 );
+
+				var circleGeometry2 = new THREE.CircleGeometry( 0.5, 32 );
+				var material = new THREE.MeshBasicMaterial( { color: 0xFF0000} );
+				var circle2 = new THREE.Mesh( circleGeometry2, material );
+				//circle1.position.x=1;
+				scene.add( circle2 );
+
+
+				var circleGeometry3 = new THREE.CircleGeometry( 0.5, 32 );
+				var material = new THREE.MeshBasicMaterial( { color: 0xFF0000} );
+				var circle3 = new THREE.Mesh( circleGeometry3, material );
+				//circle1.position.x=2;
+				scene.add( circle3 );
+
+				var circleGeometry4 = new THREE.CircleGeometry( 0.5, 32 );
+				var material = new THREE.MeshBasicMaterial( { color: 0xFF0000} );
+				var circle4 = new THREE.Mesh( circleGeometry4, material );
+				//circle1.position.x=3;
+				scene.add( circle4 );
+
+
+
+				group = new THREE.Object3D();//create an empty container
+				group.add( cube );
+				group.add(circle1);//add a mesh with geometry to it
+				group.add(circle2);
+				group.add(circle3);
+				group.add(circle4);   
+
+
+				scene.add( group );//when done, add the group to the scene
+				//End of Main Shape 												**/
+
+
+				var geometry1 = new THREE.ConeGeometry( 1, 2, 5);
+				var material1 = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+				var cone1 = new THREE.Mesh( geometry1, material1);
+				cone1.position.x=2;
+				scene.add( cone1 );
+
+				var geometry2 = new THREE.ConeGeometry( 1, 2, 5 );
+				var material2 = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+				var cone2 = new THREE.Mesh( geometry2, material2);
+				cone2.position.y=2;
+				scene.add( cone2 );
+
+				var geometry3 = new THREE.ConeGeometry(1, 2,5 );
+				var material3 = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+				var cone3= new THREE.Mesh( geometry3, material3);
+				cone3.position.x=-3;
+				scene.add( cone3 );
+
+
+
+				var geometry4 = new THREE.ConeGeometry(1, 2,5 );
+				var material4 = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+				var cone4= new THREE.Mesh( geometry4, material4);
+				cone4.position.x=-4;
+				scene.add( cone4 );
+
+				
+				document.addEventListener('keydown',Keyboard,false);
+
+			}
+			
+			function Keyboard()
+			{
+
+				//cube.position.set(4,0,0);
+			    //cube.position.set(-4,0,0);
+			    //cube.position.y=0;
+
+
+				if(event.keyCode==37)//left arrow
+				{
+					if(cube.position.x>=-4)
+					{
+						cube.position.x=cube.position.x-speed; 
+					}
+				}
+				else if(event.keyCode==39)//right arrow
+				{
+						if(cube.position.x<=4)
+						{
+							cube.position.x=cube.position.x+speed;
+						}
+				}
+				else if(event.keyCode==38)// up arrow
+				{
+						cube.position.y=cube.position.y+speed;
+
+				}
+				else if(event.keyCode==40)// down arrow
+				{
+					if(cube.position.y>0)
+					{
+						cube.position.y=cube.position.y-speed;
+					}
+				}
+				else if(event.keyCode==87)//w keyboard
+				{
+				      camera.position.x -= Math.sin(camera.rotation.y) * player.movementSpeed;
+				      camera.position.z -= -Math.cos(camera.rotation.y) * player.movementSpeedpeed;
+				}
+
+				else if(event.keyCode==83)//s keyboard
+				{
+				      camera.position.x += Math.sin(camera.rotation.y) * player.movementSpeed;
+				      camera.position.z += -Math.cos(camera.rotation.y) * player.movementSpeed;
+				}
+				else if(event.keyCode==65)//a keyboard
+				{
+				      camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * player.movementSpeed;
+				      camera.position.z += -Math.cos(camera.rotation.y + Math.PI/2) * player.movementSpeed;
+				}
+				else if(event.keyCode==68)//d keyboard
+				{
+				      camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * player.movementSpeed;
+				      camera.position.z += -Math.cos(camera.rotation.y - Math.PI/2) * player.movementSpeed;
+				}
+
+			}
+		
+
+			function animate(){
+				requestAnimationFrame( animate );
+				render()			
+			};
+
+			function render(){
+				renderer.clear();
+				renderer.render(scene,camera);
+			}
+
+		</script>
+	</body>
+</html>
