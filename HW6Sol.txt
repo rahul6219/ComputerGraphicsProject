@@ -1,0 +1,306 @@
+<html>
+	<head>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script>
+
+			var scene,camera,renderer,cube;			
+			var meshFloor;
+			var speed=0.1;
+			var player ={height: 2.0, movementSpeed: 0.3, turnSpeed: Math.PI * 0.03};
+			var group;
+			var myVeh;
+			var myVehXPos;
+			var myVehYPos;
+			var myVehZPos;
+
+			var geo1Mesh;
+			var geo2Mesh;
+			var geo3Mesh;
+			var geo4Mesh;
+			var geo5Mesh;
+
+			var geometryNameArray;
+			var geometryPosXArray;
+			var geometryPosYArray;
+			var geometryPosZArray;
+
+			var distanceArray;
+			var radius=1.5;
+			var collision=0;
+
+			
+			main();
+			animate();
+
+			function main()
+			{
+
+				scene = new THREE.Scene();
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				//Main Shape Cube with circle around it
+				var geometry = new THREE.BoxGeometry(1,1,1);
+				var material = new THREE.MeshBasicMaterial( { color: 0x8A0707 } );
+				cube = new THREE.Mesh( geometry, material );
+				scene.add( cube );
+
+				 cube.position.set(0,-2,0);
+				//cube.position.set(0,0,5);
+
+				camera.position.set(0,player.height,-8);
+				camera.lookAt(new THREE.Vector3(0,player.height,0));
+
+				meshFloor=new THREE.Mesh( 
+					new THREE.PlaneGeometry(10,10,10,10),
+					new THREE.MeshBasicMaterial({color:0x3b5998,wireframe:false})
+
+				);
+
+				meshFloor.rotation.x=meshFloor.rotation.x- Math.PI/2;
+				scene.add(meshFloor);
+
+				var ringBufferGeo = new THREE.RingBufferGeometry( 0.3, 1.5, 32 );
+				var ringBufferGeoMaterial = new THREE.MeshBasicMaterial( { color: 0x32cd32, side: THREE.DoubleSide } );
+				var ringBufferGeoMesh = new THREE.Mesh( ringBufferGeo, ringBufferGeoMaterial);
+
+				cube.position.y=cube.position.y+2.4;
+				ringBufferGeoMesh.position.y=ringBufferGeoMesh.position.y+0.5;
+				ringBufferGeoMesh.rotation.x=Math.PI/2;
+
+			    myVeh=new THREE.Object3D();
+
+				myVeh.add(cube);
+				myVeh.add(ringBufferGeoMesh);
+				scene.add(myVeh);
+
+				myVehXPos=myVeh.position.x;
+				myVehYPos=myVeh.position.y;
+				myVehZPos=myVeh.position.z;
+
+				console.log(myVehXPos,myVehYPos,myVehZPos);
+
+
+				var geometry1 = new THREE.BoxGeometry(1,1,1); 			//( 1,1.4, 5);
+				var material1 = new THREE.MeshBasicMaterial( {color: 0xffa500} ); //orange
+				geo1Mesh = new THREE.Mesh( geometry1, material1);
+				geo1Mesh.position.z=-4;
+				scene.add( geo1Mesh );
+
+			
+				var geometry2 = new THREE.BoxGeometry(1,1,1);
+				var material2 = new THREE.MeshBasicMaterial( {color:0x00FFFF	} ); //cyan
+				var geo2Mesh = new THREE.Mesh( geometry2, material2);
+				geo2Mesh.position.x=-4;
+				scene.add( geo2Mesh );
+
+				var geometry3 = new THREE.BoxGeometry(1,1,1);
+				var material3 = new THREE.MeshBasicMaterial( {color: 0xFFB6C1} );  //pink
+				var geo3Mesh= new THREE.Mesh( geometry3, material3);
+				geo3Mesh.position.set(1,0,-2);
+				scene.add( geo3Mesh );
+
+				var geometry4 = new THREE.BoxGeometry(1,1,1);
+				var material4 = new THREE.MeshBasicMaterial( {color: 0x778899	} ); //lightgray
+				var geo4Mesh= new THREE.Mesh( geometry4, material4);
+				geo4Mesh.position.set(4,0,2.8);
+				scene.add( geo4Mesh )
+
+				var geometry5 = new THREE.BoxGeometry(1,1,1);
+				var material5 = new THREE.MeshBasicMaterial( {color: 0xFFDEAD	} ); //navajowhite	
+			    geo5Mesh= new THREE.Mesh( geometry5, material5);
+				geo5Mesh.position.set(3,0,-3);
+				scene.add( geo5Mesh );
+
+
+			    geometryNameArray=[geo1Mesh,geo2Mesh,geo3Mesh,geo4Mesh,geo5Mesh];
+
+				geometryPosXArray=[
+
+					[geo1Mesh.position.x],
+					[geo2Mesh.position.x],
+					[geo3Mesh.position.x],
+					[geo4Mesh.position.x],
+					[geo5Mesh.position.x]
+
+				];
+
+				geometryPosYArray=[
+
+					[geo1Mesh.position.y],
+					[geo2Mesh.position.y],
+					[geo3Mesh.position.y],
+					[geo4Mesh.position.y],
+					[geo5Mesh.position.y]
+
+				];
+
+				geometryPosZArray=[
+
+					[geo1Mesh.position.z],
+					[geo2Mesh.position.z],
+					[geo3Mesh.position.z],
+					[geo4Mesh.position.z],
+					[geo5Mesh.position.z]
+				];
+
+
+				
+				document.addEventListener('keydown',Keyboard,false);
+
+			}
+
+			distanceArray=[];
+			function distance()
+			{
+
+				console.log("IN THE DISTANCE FUNCTION!!!!!");
+				for(var i=0; i<5;i++)
+				{
+					distanceArray[i]=Math.sqrt(Math.pow((cube.position.x-geometryPosXArray[i]),2) +
+
+						Math.pow((cube.position.y-geometryPosYArray[i]),2)+
+
+						Math.pow((cube.position.z-geometryPosZArray[i]),2));
+				}
+				 
+				if(distanceArray[i]<=Math.round(cube.position.x) && distanceArray[i]<=Math.round(cube.position.y) &&distanceArray[i]< radius )
+						{	
+
+								collision++;
+								console.log(collision);
+								console.log("IN THE collision function part!!!!!");
+
+						}
+				
+			}
+
+			/**function coll()
+			{
+
+				for(var j=0; j<5;j++)
+				{
+						if(distanceArray[j]<=cube.position.x && distanceArray[j]<=cube.position.y && distanceArray[j]< radius )
+						{	
+
+								collision++;
+								console.log(collision);
+								console.log("IN THE collision function part!!!!!");
+
+						}
+				}
+			}**/
+
+
+			
+			function Keyboard()
+			{
+
+				//cube.position.set(4,0,0);
+			    //cube.position.set(-4,0,0);
+			    //cube.position.y=0;
+			    myVehXPos=myVeh.position.x;
+				myVehYPos=myVeh.position.y;
+				myVehZPos=myVeh.position.z;
+				console.log(myVehXPos,myVehYPos,myVehZPos);
+
+				// up arrow=38  
+				// x arrow=88
+				//swap them
+				//down arrow=40
+				// z arrow=90
+				//swap them
+
+				distance();
+
+				if(event.keyCode==39)//left arrow
+				{
+					if(myVeh.position.x>=-4)
+					{
+						myVeh.position.x=myVeh.position.x-speed; 			
+					}
+				}
+				else if(event.keyCode==37)//right arrow
+				{
+						if(myVeh.position.x<=4)
+						{
+							myVeh.position.x=myVeh.position.x+speed;
+						}
+				}
+				else if(event.keyCode==88)// x arrow moving in z dir 
+				{
+						if(myVeh.position.y>1)
+						{
+							myVeh.position.y=myVeh.position.y+speed;	
+						}			
+
+				}
+				else if(event.keyCode==90)// down arrow
+				{
+					if(myVeh.position.y>0)
+					{
+						myVeh.position.y=myVeh.position.y-speed;
+					}
+				}
+				else if(event.keyCode==40) // Z   to move forward in z direction
+				{
+					if(myVeh.position.z>-4.5)
+					{
+						myVeh.position.z=myVeh.position.z-speed;	
+					}
+				}
+				else if(event.keyCode==38) // X  to move backward in z direction
+				{
+					if(myVeh.position.z<3)
+					{
+						myVeh.position.z=myVeh.position.z+speed;	
+					}
+				}
+				else if(event.keyCode==87)//w keyboard
+				{
+				      camera.position.x -= Math.sin(camera.rotation.y) * player.movementSpeed;
+				      camera.position.z -= -Math.cos(camera.rotation.y) * player.movementSpeed;
+				}
+
+				else if(event.keyCode==83)//s keyboard
+				{
+				      camera.position.x += Math.sin(camera.rotation.y) * player.movementSpeed;
+				      camera.position.z += -Math.cos(camera.rotation.y) * player.movementSpeed;
+				}
+				else if(event.keyCode==65)//a keyboard
+				{
+				      camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * player.movementSpeed;
+				      camera.position.z += -Math.cos(camera.rotation.y + Math.PI/2) * player.movementSpeed;
+				}
+				else if(event.keyCode==68)//d keyboard
+				{
+				      camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * player.movementSpeed;
+				      camera.position.z += -Math.cos(camera.rotation.y - Math.PI/2) * player.movementSpeed;
+				}
+
+			}
+		
+
+			function animate(){
+				requestAnimationFrame( animate );
+				render()			
+			};
+
+			function render(){
+				renderer.clear();
+				renderer.render(scene,camera);
+			}
+
+		</script>
+	</body>
+</html>
